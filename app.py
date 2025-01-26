@@ -55,9 +55,13 @@ with st.sidebar:
                 
                 index = VectorStoreIndex.from_documents(docs)
                 
-                # Create query engine with custom prompt
-                query_engine = index.as_query_engine()
+                # Create query engine with streaming enabled
+                query_engine = index.as_query_engine(
+                    streaming=True,  # Enable streaming
+                    similarity_top_k=1  # Number of similar chunks to retrieve
+                )
                 
+                # Create and set custom prompt
                 qa_prompt_tmpl_str = (
                     "Context information is below.\n"
                     "---------------------\n"
@@ -91,11 +95,26 @@ if st.button("Ask"):
         st.warning("Please initialize the model first using the sidebar!")
     else:
         if query:
+            st.markdown("### Answer:")
             with st.spinner("Generating response..."):
                 try:
+                    # Create a placeholder for the streaming response
+                    response_placeholder = st.empty()
+                    full_response = ""
+                    
+                    # Get response
                     response = st.session_state.query_engine.query(query)
-                    st.markdown("### Answer:")
-                    st.markdown(response.response)
+                    
+                    # st.markdown("### Answer:")
+                    # Stream the response chunks
+                    for chunk in response.response_gen:
+                        full_response += chunk
+                        # Update the placeholder with the accumulated response
+                        response_placeholder.markdown(full_response + "▌")
+                    
+                    # Final update without the cursor
+                    response_placeholder.markdown(full_response)
+                    
                 except Exception as e:
                     st.error(f"Error generating response: {str(e)}")
         else:

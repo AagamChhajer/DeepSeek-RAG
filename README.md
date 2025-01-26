@@ -1,6 +1,6 @@
 # DeepSeek RAG Chat 📚
 
-A Streamlit-based application that enables users to have interactive conversations with their PDF documents using DeepSeek LLM and RAG (Retrieval-Augmented Generation) technology.
+A Streamlit-based application that enables users to have interactive conversations with their PDF documents using DeepSeek LLM and RAG (Retrieval-Augmented Generation) technology, featuring step-by-step reasoning.
 
 ![DeepSeek RAG Chat Interface](assets/home_page.png)
 
@@ -10,15 +10,21 @@ A Streamlit-based application that enables users to have interactive conversatio
 - 🔍 Advanced RAG Implementation: Uses LlamaIndex for efficient document retrieval
 - 🤖 DeepSeek LLM Integration: Powered by DeepSeek-r1 8B model
 - 💪 High-Quality Embeddings: Uses BAAI/bge-large-en-v1.5 for document embeddings
-- 🎯 Step-by-Step Reasoning: Structured response generation with detailed explanations
+- 🎯 Step-by-Step Reasoning: Shows detailed thinking process before providing answers
+- 🔄 Real-time Streaming: Character-by-character response streaming
 - 🖥️ User-Friendly Interface: Clean and intuitive Streamlit-based UI
 
 ## Sample Output
 
-The application provides detailed, context-aware responses to user queries:
+The application provides detailed responses with visible reasoning:
 
-![Output Example 1](assets/output_sec1.png)
-![Output Example 2](assets/output_sec2.png)
+### Thinking Process
+![Thinking Process](assets/output_1.png)
+
+### Final Answer
+![Final Answer](assets/output_2.png)
+
+The interface separates the model's thinking process from its final answer, providing transparency into its reasoning while maintaining clear and concise responses.
 
 ## Installation
 
@@ -35,10 +41,10 @@ cd deepseek-rag-chat
 pip install -r requirements.txt
 ```
 
-3. Make sure you have Ollama installed on your system.
+3. Make sure you have Ollama installed and the DeepSeek model downloaded:
 
 ```bash
-ollama run deepseek-r1
+ollama pull deepseek-r1:8b
 ```
 
 4. Run the application:
@@ -51,6 +57,7 @@ streamlit run app.py
 - Enter the PDF directory path in the sidebar
 - Click "Initialize Model" to load documents and set up the system
 - Start asking questions about your PDFs
+- Expand/collapse the thinking process section as needed
 
 ## Requirements
 
@@ -70,8 +77,8 @@ deepseek-rag-chat/
 ├── requirements.txt    # Project dependencies
 ├── assets/            # Screenshots and images
 │   ├── home_page.png
-│   ├── output_sec1.png
-│   └── output_sec2.png
+│   ├── output_1.png   # Thinking process screenshot
+│   ├── output_2.png   # Final answer screenshot
 └── pdf_dir/           # Directory for PDF documents
 ```
 
@@ -80,6 +87,8 @@ deepseek-rag-chat/
 - **Document Loading**: Supports recursive PDF loading from specified directories
 - **Embedding Generation**: Uses BAAI/bge-large-en-v1.5 for high-quality document embeddings
 - **Query Processing**: Custom prompt template for structured and detailed responses
+- **Streaming Responses**: Character-by-character streaming for both thinking process and final answers
+- **Interactive UI**: Collapsible thinking process section and clean answer display
 - **Session Management**: Maintains conversation context using Streamlit session state
 - **Error Handling**: Robust error handling for model initialization and query processing
 

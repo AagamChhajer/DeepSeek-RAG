@@ -67,10 +67,14 @@ with st.sidebar:
                     "---------------------\n"
                     "{context_str}\n"
                     "---------------------\n"
-                    "Given the context information above I want you to think step by step to answer the query in a crisp manner, "
-                    "incase case you don't know the answer say 'I don't know!'.\n"
+                    "Given the context information above, first think step by step about how to answer the query, "
+                    "then provide a clear and concise answer. Format your response as follows:\n\n"
+                    "THINKING:\n"
+                    "[Your step-by-step reasoning process]\n\n"
+                    "ANSWER:\n"
+                    "[Your final, concise answer]\n\n"
+                    "If you don't know the answer, say 'I don't know!'\n"
                     "Query: {query_str}\n"
-                    "Answer: "
                 )
                 qa_prompt_tmpl = PromptTemplate(qa_prompt_tmpl_str)
                 
@@ -95,25 +99,46 @@ if st.button("Ask"):
         st.warning("Please initialize the model first using the sidebar!")
     else:
         if query:
-            st.markdown("### Answer:")
             with st.spinner("Generating response..."):
                 try:
-                    # Create a placeholder for the streaming response
-                    response_placeholder = st.empty()
-                    full_response = ""
+                    # Create two separate containers
+                    thinking_container = st.expander("🤔 Thinking Process", expanded=True)
+                    answer_container = st.container()
                     
                     # Get response
                     response = st.session_state.query_engine.query(query)
                     
-                    # st.markdown("### Answer:")
-                    # Stream the response chunks
-                    for chunk in response.response_gen:
-                        full_response += chunk
-                        # Update the placeholder with the accumulated response
-                        response_placeholder.markdown(full_response + "▌")
+                    thinking = ""
+                    answer = ""
+                    in_thinking = False
                     
-                    # Final update without the cursor
-                    response_placeholder.markdown(full_response)
+                    # Create placeholders for continuous updates
+                    thinking_placeholder = thinking_container.empty()
+                    answer_placeholder = answer_container.empty()
+                    
+                    # Stream and separate the response
+                    for chunk in response.response_gen:
+                        if "<think>" in chunk:
+                            in_thinking = True
+                            chunk = chunk.replace("<think>", "")
+                        elif "</think>" in chunk:
+                            in_thinking = False
+                            chunk = chunk.replace("</think>", "")
+                            # Move to answer section
+                            continue
+                            
+                        if in_thinking:
+                            thinking += chunk
+                            # Remove any remaining tags and clean up
+                            cleaned_thinking = thinking.replace("<think>", "").strip()
+                            thinking_placeholder.write(cleaned_thinking + "▌", unsafe_allow_html=True)
+                        else:
+                            answer += chunk
+                            answer_placeholder.write(answer + "▌", unsafe_allow_html=True)
+                    
+                    # Final update without cursors
+                    thinking_placeholder.write(thinking.replace("<think>", "").strip(), unsafe_allow_html=True)
+                    answer_placeholder.write(answer.strip(), unsafe_allow_html=True)
                     
                 except Exception as e:
                     st.error(f"Error generating response: {str(e)}")
